@@ -1,0 +1,122 @@
+<!--
+Create a basic HTML page with:
+
+An input field to enter a task.
+
+A button to add the task.
+
+A list (<ul>) to display tasks.
+
+Each task in the list should have:
+
+The task text.
+
+A “Complete” button to strike it through.
+
+A “Delete” button to remove it.
+
+💡 Bonus (if time permits):
+Store tasks in localStorage so the list persists on reload.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Persistent Task List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center">📝 My Task List</h1>
+
+    <div class="flex gap-2 mb-4">
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="Enter task"
+        class="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+      />
+      <button
+        id="addTaskBtn"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+      >
+        Add
+      </button>
+    </div>
+
+    <ul id="taskList" class="space-y-2"></ul>
+  </div>
+
+  <script>
+    // Load tasks from localStorage when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+      tasks.forEach(task => addTaskToList(task.text, task.completed));
+    });
+
+    // Function to save tasks to localStorage
+    function saveTasks() {
+      const tasks = Array.from(document.querySelectorAll('#taskList li')).map(li => ({
+        text: li.querySelector('span').textContent,
+        completed: li.querySelector('span').classList.contains('line-through')
+      }));
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // Function to add task to the list
+    function addTaskToList(taskText, isCompleted = false) {
+      const li = document.createElement('li');
+      li.className = "flex items-center justify-between bg-gray-100 px-4 py-2 rounded shadow-sm";
+
+      const span = document.createElement('span');
+      span.textContent = taskText;
+      span.className = "flex-1";
+      if (isCompleted) {
+        span.classList.add('line-through', 'text-gray-400');
+      }
+
+      const buttonContainer = document.createElement('div');
+      buttonContainer.className = "flex gap-2";
+
+      const completeBtn = document.createElement('button');
+      completeBtn.textContent = '✔';
+      completeBtn.title = 'Mark as complete';
+      completeBtn.className = 'bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600';
+      completeBtn.onclick = () => {
+        span.classList.toggle('line-through');
+        span.classList.toggle('text-gray-400');
+        saveTasks();
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '✖';
+      deleteBtn.title = 'Delete';
+      deleteBtn.className = 'bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600';
+      deleteBtn.onclick = () => {
+        li.remove();
+        saveTasks();
+      };
+
+      buttonContainer.appendChild(completeBtn);
+      buttonContainer.appendChild(deleteBtn);
+
+      li.appendChild(span);
+      li.appendChild(buttonContainer);
+
+      document.getElementById('taskList').appendChild(li);
+    }
+
+    // Add new task
+    document.getElementById('addTaskBtn').addEventListener('click', function () {
+      const input = document.getElementById('taskInput');
+      const taskText = input.value.trim();
+
+      if (taskText === '') return;
+
+      addTaskToList(taskText);
+      input.value = '';
+      saveTasks();
+    });
+  </script>
+</body>
+</html>
